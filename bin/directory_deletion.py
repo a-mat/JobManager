@@ -13,11 +13,25 @@ logging.info('Script ran')
 def scanDir():
     list_of_stuff = []
     logging.info("Running down the list in" + path)
-    for dir in os.listdir(path):
+    try:
+        d=os.listdir(path)
+    except:
+            print("directory doesnt exist")
+    else:
+        for dir in d:
             jobpath = (path+'/'+dir)
             logging.info("First Job to be examined is: "+ dir)
-            with open(jobpath + "/status.csv") as jobstat:
+            try:
+                jobstat=open(jobpath + "/status.csv")
+
+            except FileNotFoundError:
+                print(jobpath + "/status.csv file doesnt exist")
+            except OSError:
+                print("Error opening up " + jobpath + "/status.csv")
+
+            else:
                 reader = csv.DictReader(jobstat)
+
                 delcheck = False
                 for r in reader:
 
@@ -36,12 +50,12 @@ def scanDir():
                         pass
                 if delcheck:
                     logging.info(dir + "matches the delCheck. It is marked for deletion")
-            list_of_stuff.append(jobpath)
-    logging.info("The list of Marked jobs are: " + ','.join(list_of_stuff))
-    for folder in list_of_stuff:
-        print(folder)
-        #shutil.rmtree(folder,ignore_errors=True)
-   #     break
+                    list_of_stuff.append(jobpath)
+        logging.info("The list of Marked jobs are: " + ','.join(list_of_stuff))
+        for folder in list_of_stuff:
+            print(folder)
+            #shutil.rmtree(folder,ignore_errors=True)
+            #break
 
 def delList(file_list):
     print(file_list)
