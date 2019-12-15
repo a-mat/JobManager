@@ -46,4 +46,4 @@ def delList(file_list):
 delList(list_of_stuff)
 
 if __name__ == "__main__":
-# main
+# main method
