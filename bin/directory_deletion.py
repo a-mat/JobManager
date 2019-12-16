@@ -3,6 +3,24 @@ import csv
 import shutil
 import logging
 import sys
+import click
+
+@click.command()
+@click.option('--user',
+              help='specify the user that you want')
+@click.option('--app',
+              help='specify the user that you want')
+@click.option('--savedsearch',
+              help='specify the user that you want')
+@click.option('--ttl',
+              help='specify the user that you want')
+
+def test (user,app,savedsearch,ttl):
+    time=ttl
+    dict={"user":user, "app":app, "savedsearcj":savedsearch}
+    dict = {k: v for k, v in dict.items() if v != None}
+    print(dict)
+    print("didnt work")
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO,filename='test.log')
 logging.info('Script ran')
@@ -66,24 +84,29 @@ def delList(file_list):
     # shutil.rmtree(folder,ignore_errors=True)
 
 
+
+
+
 # System argument will take Username, Saved Search Name, APP,
 if __name__ == "__main__":
-    try:
-        ssUser=sys.argv[1]
-        ssName=sys.argv[2]
-        ssApp=sys.argv[3]
-    except:
-        print("there was an error with the arguments")
-        exit()
-    try:
-        dispatchPath=sys.argv[4]
-    except:
-        path="dispatch"
-    else:
-        path=dispatchPath
-    finally:
-        list_of_stuff=[]
-        scanDir()
-        delList(list_of_stuff)
+    print("before")
+    test()
+    print("mp[e")
+   # try:
+    #    test()
+
+    #except:
+    #    print("there was an error with the arguments")
+    #    exit()
+    #try:
+     #   dispatchPath=sys.argv[4]
+    #except:
+    #    path="dispatch"
+    #else:
+     #   path=dispatchPath
+    #finally:
+     #   list_of_stuff=[]
+      #  scanDir()
+       # delList(list_of_stuff)
 
 
