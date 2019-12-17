@@ -1,4 +1,5 @@
 import os
+import os.path as path
 import csv
 import shutil
 import logging
@@ -17,71 +18,79 @@ import click
 
 def test (user,app,savedsearch,ttl):
     time=ttl
-    dict={"user":user, "app":app, "savedsearcj":savedsearch}
+    dict={"user":user, "app":app, "savedsearch":savedsearch}
     dict = {k: v for k, v in dict.items() if v != None}
     print(dict)
-    print("didnt work")
+    # print(path.abspath(path.join(os.getcwd(),"../..")))
+    path="dispatch"
 
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO,filename='test.log')
-logging.info('Script ran')
+    scanDir(dict,path)
+
+
 
 #path='/syslog/apps/splunk/var/run/splunk/dispatch'
 #path='dispatch'
 
-def scanDir():
+def scanDir(dict,path):
     global list_of_stuff
-    logging.info("Running down the list in" + path)
+
+   # logging.info("Running down the list in" + path)
     try:
+        #
         d=os.listdir(path)
+        #print("folder inside is going to be")
+        #print(d)
     except:
-            print("directory doesnt exist")
+            #print("directory doesnt exist")
             exit()
     else:
         for dir in d:
+            #print("lets open up " + dir)
             jobpath = (path+'/'+dir)
-            logging.info("First Job to be examined is: "+ dir)
+            #print("aka " + jobpath)
+            #logging.info("First Job to be examined is: "+ dir)
             try:
+
                 jobstat=open(jobpath + "/status.csv")
 
             except FileNotFoundError:
-                logging.info(jobpath + "/status.csv file doesnt exist")
-            except OSError:
-                logging.info("Error opening up " + jobpath + "/status.csv")
+                ##logging.info(jobpath + "/status.csv file doesnt exist")
 
+                print("/status.csv file doesnt exist")
+            except OSError:
+                #logging.info("Error opening up " + jobpath + "/status.csv")
+                print("Error opening up " + jobpath + "/status.csv")
             else:
                 reader = csv.DictReader(jobstat)
 
                 delcheck = False
                 for r in reader:
+                    print(r)
+                    total=0
+                    for k, v in dict.items():
 
-                    if (r['state'] == 'DONE' and r['user'] == '427958'):
-                        # print(dir + "My job and it is over")
-                        logging.info(dir + "is  DONE and matches the User")
+
+                        if r[k]==v and r['state'] == 'DONE':
+                           
+                            total+=1
+                        else:
+                            print("wtf")
+
+                    if total== len(dict.keys()):
                         delcheck = True
-                        break
-                    elif r['user'] == '427958':
-                        # print(dir + " job is not done and is currently: " + r['state'] )
-                        # logging.info(dir + " job is not done and is currently: " + r['state'])
-                        pass
-                    else:
-                        # print(dir + " is not yours")
-                        # logging.info(dir + " not my job so not going to get deleted")
-                        pass
+
+
                 if delcheck:
-                    logging.info(dir + "matches the delCheck. It is marked for deletion")
+                    #logging.info(dir + "matches the delCheck. It is marked for deletion")
                     list_of_stuff.append(jobpath)
-        logging.info("The list of Marked jobs are: " + ','.join(list_of_stuff))
+                #logging.info("The list of Marked jobs are: " + ','.join(list_of_stuff))
 
 
-            #shutil.rmtree(folder,ignore_errors=True)
-            #break
 
+        for d in list_of_stuff:
+            print(d + "will be deleted")
+            # shutil.rmtree(folder,ignore_errors=True)
 
-def delList(file_list):
-    logging.info("Deleting " + ','.join(file_list))
-    for d in file_list:
-        print(d)
-    # shutil.rmtree(folder,ignore_errors=True)
 
 
 
@@ -90,8 +99,9 @@ def delList(file_list):
 # System argument will take Username, Saved Search Name, APP,
 if __name__ == "__main__":
     print("before")
+    list_of_stuff = []
     test()
-    print("mp[e")
+
    # try:
     #    test()
 
