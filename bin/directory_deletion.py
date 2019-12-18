@@ -5,6 +5,7 @@ import shutil
 import logging
 import sys
 import click
+import threading
 
 @click.command()
 @click.option('--user',
@@ -15,23 +16,34 @@ import click
               help='specify the user that you want')
 @click.option('--ttl',
               help='specify the user that you want')
+@click.option('--schedule', type=click.IntRange(1,1440 ),
+              help='numerical value to represent how often this script runs. Choosing the number \'11\' will run this'
+                   ' script every 11 minutes')
 
-def test (user,app,savedsearch,ttl):
+
+def test (user,app,savedsearch,ttl,schedule):
     time=ttl
+    sched=schedule*60
     dict={"user":user, "app":app, "savedsearch":savedsearch}
     dict = {k: v for k, v in dict.items() if v != None}
     for k,v in dict.items():
             dict[k]=v.split(',')
 
     # print(path.abspath(path.join(os.getcwd(),"../..")))
+
     path="dispatch"
-    scanDir(dict,path)
+    repeater(sched,dict,path)
+
+   # scanDir(dict,path)
+
+
 
 #path='/syslog/apps/splunk/var/run/splunk/dispatch'
 #path='dispatch'
 
 def scanDir(dict,path):
     global list_of_stuff
+    list_of_stuff=[]
     logging.info("Running down the list in" + path)
     try:
         d=os.listdir(path)
@@ -80,11 +92,14 @@ def scanDir(dict,path):
 
         for d in list_of_stuff:
             logging.info('scan across dispatch directory is complete. Files ' + d + ' will be deleted')
-
+            print(d)
             # shutil.rmtree(folder,ignore_errors=True)
 
 
 
+def repeater(sched,d,p):
+    scanDir(d,p)
+    threading.Timer(sched, repeater, [sched,d,p]).start()
 
 
 
@@ -93,6 +108,7 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='test.log')
     logging.info('Script ran')
     list_of_stuff = []
+
     test()
 
 
