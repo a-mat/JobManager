@@ -10,7 +10,7 @@ The goal of this script is to allow you to delete DONE jobs and can be filtered 
  directory_deletion.py [--user ListUsers][--app ListApp ][--savedsearches ListSS][--schedule timer]
  ```
  
- #Flags
+ # Flags
  
    `--user ListUsers`
         specify the user that will have their jobs deleted . Multiple users can be listed as long as they are comma delimited 
