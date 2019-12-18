@@ -18,9 +18,12 @@ import click
 
 def test (user,app,savedsearch,ttl):
     time=ttl
+
     dict={"user":user, "app":app, "savedsearch":savedsearch}
     dict = {k: v for k, v in dict.items() if v != None}
-    print(dict)
+    for k,v in dict.items():
+            dict[k]=v.split(',')
+
     # print(path.abspath(path.join(os.getcwd(),"../..")))
     path="dispatch"
 
@@ -67,14 +70,14 @@ def scanDir(dict,path):
                 for r in reader:
                     print(r)
                     total=0
-                    for k, v in dict.items():
+                    for k in dict:
+                        for v in dict[k]:
 
+                            if r[k]==v and r['state'] == 'DONE':
 
-                        if r[k]==v and r['state'] == 'DONE':
-                           
-                            total+=1
-                        else:
-                            print("wtf")
+                                total+=1
+                            else:
+                                print("wtf")
 
                     if total== len(dict.keys()):
                         delcheck = True
@@ -98,7 +101,7 @@ def scanDir(dict,path):
 
 # System argument will take Username, Saved Search Name, APP,
 if __name__ == "__main__":
-    print("before")
+
     list_of_stuff = []
     test()
 
