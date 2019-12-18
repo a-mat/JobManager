@@ -55,7 +55,8 @@ def scanDir(dict,path):
                 reader = csv.DictReader(jobstat)
                 delcheck = False
                 for r in reader:
-                    print(r)
+                    logging.info('In ' + jobpath +' job. Examining first line: ')
+                    logging.info(r)
                     total=0
                     for k in dict:
                         for v in dict[k]:
