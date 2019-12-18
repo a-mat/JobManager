@@ -4,7 +4,7 @@ This script allows you to clean up any remaining jobs in your directory that are
 
 The goal of this script is to allow you to delete DONE jobs and can be filtered down at a User Level and App Level. 
     
- ##Usage
+ ## Usage
  
  `directory_deletion.py --user ToddH --app github --savedsearch dailyrepo_24hr `
  
