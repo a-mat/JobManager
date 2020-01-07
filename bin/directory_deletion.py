@@ -7,6 +7,21 @@ import sys
 import click
 import threading
 
+"""
+
+TODO:
+    1) TTL argument needs to be flushed out
+    2) dispatch directory needs to be signaled as welll
+    3) Implementation of the deletion command needs to be worked on as well.
+    
+    
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+print(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'var/run/splunk/dispatch'))
+
+"""
+
+
 @click.command()
 @click.option('--user',
               help='specify the user that you want')
@@ -16,46 +31,52 @@ import threading
               help='specify the user that you want')
 @click.option('--ttl',
               help='specify the user that you want')
-@click.option('--schedule', type=click.IntRange(1,1440 ),
+@click.option('--schedule', type=click.IntRange(1, 1440),
               help='numerical value to represent how often this script runs. Choosing the number \'11\' will run this'
                    ' script every 11 minutes')
 
 
-def test (user,app,savedsearch,ttl,schedule):
-    time=ttl
-    sched=schedule*60
-    dict={"user":user, "app":app, "savedsearch":savedsearch}
+#userParambb methoad cleans up the whole user input
+def userParam(user, app, savedsearch, ttl, schedule):
+    time = ttl
+    path = "dispatch"
+    dict = {"user": user, "app": app, "savedsearch": savedsearch}  # dict that will ne used to iterate through the
+    # .csv and look for argument matches
     dict = {k: v for k, v in dict.items() if v != None}
-    for k,v in dict.items():
-            dict[k]=v.split(',')
+    for k, v in dict.items():  # splits values into array if the user passed conmma delimited values
+        dict[k] = v.split(',')
+
+    if schedule is None:  # if block decides if we're going to start the repeated method or do a one shot clean up
+
+        scanDir(dict, path)
+    else:
+        sched = schedule * 60
+        repeater(sched, dict, path)
 
     # print(path.abspath(path.join(os.getcwd(),"../..")))
 
-    path="dispatch"
-    repeater(sched,dict,path)
 
-   # scanDir(dict,path)
+# scanDir(dict,path)
 
 
+# path='/syslog/apps/splunk/var/run/splunk/dispatch'
+# path='dispatch'
 
-#path='/syslog/apps/splunk/var/run/splunk/dispatch'
-#path='dispatch'
-
-def scanDir(dict,path):
+def scanDir(dict, path):
     global list_of_stuff
-    list_of_stuff=[]
+    list_of_stuff = []
     logging.info("Running down the list in" + path)
     try:
-        d=os.listdir(path)
+        d = os.listdir(path)
     except:
-            logging.info("directory doesnt exist")
-            exit()
+        logging.info("directory doesnt exist")
+        exit()
     else:
         for dir in d:
-            jobpath = (path+'/'+dir)
-            logging.info("First Job to be examined is: "+ dir)
+            jobpath = (path + '/' + dir)
+            logging.info("First Job to be examined is: " + dir)
             try:
-                jobstat=open(jobpath + "/status.csv")
+                jobstat = open(jobpath + "/status.csv")
 
             except FileNotFoundError:
                 logging.info(jobpath + "/status.csv file doesnt exist")
@@ -67,28 +88,25 @@ def scanDir(dict,path):
                 reader = csv.DictReader(jobstat)
                 delcheck = False
                 for r in reader:
-                    logging.info('In ' + jobpath +' job. Examining first line: ')
+                    logging.info('In ' + jobpath + ' job. Examining first line: ')
                     logging.info(r)
-                    total=0
+                    total = 0
                     for k in dict:
                         for v in dict[k]:
 
-                            if r[k]==v and r['state'] == 'DONE':
-                                total+=1
-                                logging.info(k + ':' + v +' matched with  ' + jobpath + '\'s ' + k + ':' + r[k] )
+                            if r[k] == v and r['state'] == 'DONE':
+                                total += 1
+                                logging.info(k + ':' + v + ' matched with  ' + jobpath + '\'s ' + k + ':' + r[k])
                             else:
                                 logging.info(k + ':' + v + ' did not match with  ' + jobpath + '\'s ' + k + ':' + r[k])
 
-                    if total== len(dict.keys()):
+                    if total == len(dict.keys()):
                         delcheck = True
-
 
                 if delcheck:
                     logging.info(dir + " job matches the delCheck. It is marked for deletion")
                     list_of_stuff.append(jobpath)
                 logging.info("The list of Marked jobs are: " + ','.join(list_of_stuff))
-
-
 
         for d in list_of_stuff:
             logging.info('scan across dispatch directory is complete. Files ' + d + ' will be deleted')
@@ -96,20 +114,18 @@ def scanDir(dict,path):
             # shutil.rmtree(folder,ignore_errors=True)
 
 
-
-def repeater(sched,d,p):
-    scanDir(d,p)
-    threading.Timer(sched, repeater, [sched,d,p]).start()
-
+def repeater(sched, d, p):
+    scanDir(d, p)
+    threading.Timer(sched, repeater, [sched, d, p]).start()
 
 
 # System argument will take Username, Saved Search Name, APP,
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='test.log')
+    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='dirdeletion.log')
     logging.info('Script ran')
     list_of_stuff = []
 
-    test()
+    userParam()
 
 
 
