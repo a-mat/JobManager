@@ -11,14 +11,17 @@ import threading
 
 TODO:
     1) TTL argument needs to be flushed out
-    2) dispatch directory needs to be signaled as welll
+  
     3) Implementation of the deletion command needs to be worked on as well.
     
     
 print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-print(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'var/run/splunk/dispatch'))
+In bin dir of splunk: 
+os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'var/run/splunk/dispatch')
 
+in bin of app 
+os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))),'var/run/dispatch')
 """
 
 
@@ -34,46 +37,64 @@ print(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
 @click.option('--schedule', type=click.IntRange(1, 1440),
               help='numerical value to represent how often this script runs. Choosing the number \'11\' will run this'
                    ' script every 11 minutes')
+@click.option('--path',
+              help='specify the path of the dispatch directory (e.g. /opt/splunk/var/run/dispatch')
 
 
 #userParambb methoad cleans up the whole user input
-def userParam(user, app, savedsearch, ttl, schedule):
+def userParam(user, app, savedsearch, ttl, schedule,path):
+    global dispatchDir
     time = ttl
-    path = "dispatch"
-    dict = {"user": user, "app": app, "savedsearch": savedsearch}  # dict that will ne used to iterate through the
-    # .csv and look for argument matches
-    dict = {k: v for k, v in dict.items() if v != None}
+    dispatchDir = pathFinder() if path is None else path #if path is not specified, pathfinder() will find dispatch dir
+    dict = {"user": user, "app": app, "savedsearch": savedsearch}  # dict that will be used to iterate through the .csv
+
+    dict = {k: v for k, v in dict.items() if v != None}  #remove items that the user did not pass
     for k, v in dict.items():  # splits values into array if the user passed conmma delimited values
         dict[k] = v.split(',')
 
-    if schedule is None:  # if block decides if we're going to start the repeated method or do a one shot clean up
 
-        scanDir(dict, path)
+    if schedule is None:  # if block decides if we're going to start the repeated method or do a one shot clean up
+        scanDir(dict, dispatchDir)
     else:
         sched = schedule * 60
-        repeater(sched, dict, path)
-
-    # print(path.abspath(path.join(os.getcwd(),"../..")))
+        repeater(sched, dict, dispatchDir)
 
 
-# scanDir(dict,path)
+
+# path is typically '/syslog/apps/splunk/var/run/splunk/dispatch' but different splunk installations will put it diff
+# it will find the dispatch directory as long as this .py script is in the splunk/bin  , app/<arbitrary>/bin. or
+#splunk/var/run/dispatch
+
+def pathFinder():
+    global dispatchDir
+    currentPath=os.path.realpath(__file__)
+    parent_1=os.path.basename(os.path.dirname(currentPath))
+    parent_2=os.path.basename(os.path.dirname(os.path.dirname(currentPath)))
+
+    if parent_1 == 'bin':
+        if parent_2 == 'splunk':
+            dispatchDir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'var/run/splunk/dispatch')
+        elif parent_2 == 'Dispatch Cleanup':
+            dispatchDir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))),'var/run/dispatch')
+        elif parent_2 == 'jobmanager':
+
+            dispatchDir=os.path.join(os.path.dirname(currentPath),'dispatch')
+    return dispatchDir
 
 
-# path='/syslog/apps/splunk/var/run/splunk/dispatch'
-# path='dispatch'
 
-def scanDir(dict, path):
+def scanDir(dict, dispatchDir):
     global list_of_stuff
     list_of_stuff = []
-    logging.info("Running down the list in" + path)
+    logging.info("Running down the list in" + dispatchDir)
     try:
-        d = os.listdir(path)
+        d = os.listdir(dispatchDir)
     except:
         logging.info("directory doesnt exist")
         exit()
     else:
         for dir in d:
-            jobpath = (path + '/' + dir)
+            jobpath = (dispatchDir + '/' + dir)
             logging.info("First Job to be examined is: " + dir)
             try:
                 jobstat = open(jobpath + "/status.csv")
@@ -125,6 +146,7 @@ if __name__ == "__main__":
     logging.info('Script ran')
     list_of_stuff = []
 
+    #pathFinder()
     userParam()
 
 
