@@ -23,7 +23,8 @@ The goal of this script is to allow you to delete DONE jobs and can be filtered 
     
    `--schedule timer`
         How often this script will restart and look for jobs to be deleted. Script can run as quick as every minute or once every 14               hours.Int value that is in  minutes. m Range: 1<=timer<=1440
-    `--path dispatchPath` 
+   
+   `--path dispatchPath` 
         Path of the dispatch directory (e.g. \'/opt/splunk/var/run/dispatch\').If no match is specified, the script will look for the           the dispatch directory as long as this script is placed in any of the following directories: \'SPLUNK_HOME/bin\' , 
         \'SPLUNK_HOME/etc/apps/\<app\>/bin\' , or \'SPLUNK_HOME/var/run/dispatch\'. No quotes needed.
     
