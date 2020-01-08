@@ -11,17 +11,8 @@ import threading
 
 TODO:
     1) TTL argument needs to be flushed out
-  
-    3) Implementation of the deletion command needs to be worked on as well.
-    
-    
-print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-In bin dir of splunk: 
-os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),'var/run/splunk/dispatch')
-
-in bin of app 
-os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))),'var/run/dispatch')
+    2) Implementation of the deletion command needs to be worked on as well.
+    3) Check if black/front slash affects the search for windows 
 """
 
 
@@ -144,9 +135,6 @@ def repeater(sched, d, p):
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='dirdeletion.log')
     logging.info('Script ran')
-    list_of_stuff = []
-
-    #pathFinder()
     userParam()
 
 
