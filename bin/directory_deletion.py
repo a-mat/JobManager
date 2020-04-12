@@ -13,6 +13,7 @@ TODO:
     1) TTL argument needs to be flushed out
     2) Implementation of the deletion command needs to be worked on as well.
     3) Check if black/front slash affects the search for windows 
+    3)remove click, test 2
 """
 
 
