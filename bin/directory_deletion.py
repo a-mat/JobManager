@@ -4,7 +4,7 @@ import csv
 import shutil
 import logging
 import sys
-import click
+
 import threading
 
 """
@@ -17,29 +17,14 @@ TODO:
 """
 
 
-@click.command()
-@click.option('--user',
-              help='specify the user that you want')
-@click.option('--app',
-              help='specify the user that you want')
-@click.option('--savedsearch',
-              help='specify the user that you want')
-@click.option('--ttl',
-              help='specify the user that you want')
-@click.option('--schedule', type=click.IntRange(1, 1440),
-              help='numerical value to represent how often this script runs. Choosing the number \'11\' will run this'
-                   ' script every 11 minutes')
-@click.option('--path',
-              help='specify the path of the dispatch directory (e.g. /opt/splunk/var/run/dispatch')
-
 
 #userParambb methoad cleans up the whole user input
 def userParam(user, app, savedsearch, ttl, schedule,path):
     global dispatchDir
+
     time = ttl
     dispatchDir = pathFinder() if path is None else path #if path is not specified, pathfinder() will find dispatch dir
     dict = {"user": user, "app": app, "savedsearch": savedsearch}  # dict that will be used to iterate through the .csv
-
     dict = {k: v for k, v in dict.items() if v != None}  #remove items that the user did not pass
     for k, v in dict.items():  # splits values into array if the user passed conmma delimited values
         dict[k] = v.split(',')
@@ -58,6 +43,7 @@ def userParam(user, app, savedsearch, ttl, schedule,path):
 #splunk/var/run/dispatch
 
 def pathFinder():
+
     global dispatchDir
     currentPath=os.path.realpath(__file__)
     parent_1=os.path.basename(os.path.dirname(currentPath))
@@ -71,6 +57,7 @@ def pathFinder():
         elif parent_2 == 'jobmanager':
 
             dispatchDir=os.path.join(os.path.dirname(currentPath),'dispatch')
+
     return dispatchDir
 
 
@@ -104,6 +91,7 @@ def scanDir(dict, dispatchDir):
                     logging.info('In ' + jobpath + ' job. Examining first line: ')
                     logging.info(r)
                     total = 0
+
                     for k in dict:
                         for v in dict[k]:
 
@@ -136,8 +124,33 @@ def repeater(sched, d, p):
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='dirdeletion.log')
     logging.info('Script ran')
-    userParam()
+    print(sys.argv)
+    i = 1
+    user = None
+    app = None
+    savedsearch = None
+    ttl = None
+    schedule = None
+    path = None
 
+    while i < len(sys.argv):
+        if sys.argv[i] == "--user":
+            user = sys.argv[i+1]
 
+        elif sys.argv[i] == "--app":
+            app = sys.argv[i+1]
 
+        elif sys.argv[i] == "--savedsearch":
+            savedsearch = sys.argv[i+1]
 
+        elif sys.argv[i] == "--ttl":
+            ttl = sys.argv[i+1]
+
+        elif sys.argv[i] == "--schedule":
+            schedule = sys.argv[i + 1]
+
+        elif sys.argv[i] == "--path":
+            path = sys.argv[i + 1]
+
+        i+=1
+    userParam(user, app, savedsearch, ttl, schedule, path)
